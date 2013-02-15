@@ -1,0 +1,22 @@
+{
+  "name": "fbinjection",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Minimal Firebase injection example.",
+  "background": {
+    "page": "background.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["injectedstyle.css"],
+      "js": ["jquery-1.9.1.min.js","injectedscript.js"]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_security_policy": "script-src 'self' https://*.firebase.com https://*.firebaseio.com; object-src 'self'"
+}

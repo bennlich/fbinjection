@@ -1,0 +1,12 @@
+.fb_button {
+	font-size: 100%;
+	position: fixed;
+	padding: 100px;
+	right: 10px;
+	bottom: 10px;
+	background: rgba(0,0,0,0.5);
+}
+
+.fb_button:hover {
+	background: rgba(0,0,0,0.4);
+}
