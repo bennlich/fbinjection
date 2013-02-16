@@ -1,38 +1,23 @@
 console.log("Running injectedscript.js.");
 
-var rootRef, intervalId;
+function onMsgReceived(msg) {
+    console.log(msg);
+    // increment the number displayed on the button
+    $(fbButton).text(parseInt($(fbButton).text()) + 1);
+}
 
-// Create a button to interact with Firebase
+// connect to the background page
+var fbPort = chrome.extension.connect({name: "fb_msgs"});
+
+// listen for Firebase messages forwarded from the background page
+fbPort.onMessage.addListener(onMsgReceived);
+
+// a button to send messages to Firebase
 var buttonTemplate = "<div class='fb_button'>0</div>";
+
 var fbButton = $(buttonTemplate).click(function() {
-    if (rootRef) rootRef.push(new Date().toUTCString());
+    // send messages to Firebase by way of the background script
+    fbPort.postMessage({ body: new Date().toUTCString() });
 });
+
 fbButton = document.documentElement.appendChild(fbButton[0]);
-
-// Get the Firebase script
-// Note: If you try to fetch the Firebase script via HTTP GET here,
-// the Firebase script will not be useable by this injectedscript.
-// This is why we send a message to the background script to fetch
-// and return the Firebase script.
-
-if (typeof(Firebase) == 'undefined') {
-    console.log("Requesting Firebase script.");
-    chrome.extension.sendMessage({type: "requestFirebaseScript"}, function(res) {
-        console.log(res);
-        intervalId = setInterval(function() {
-            console.log("Checking if Firebase script is loaded.");
-            if (typeof(Firebase) == 'function') {
-                initFb();
-                clearInterval(intervalId);
-            }
-        }, 500);
-    });
-}
-
-function initFb() {
-    rootRef = new Firebase("https://fbinjection.firebaseio-demo.com/");
-    rootRef.on("child_added", function(snap) {
-        console.log(snap.val());
-        $(fbButton).text(parseInt($(fbButton).text())+1);
-    });
-}

@@ -1,9 +1,22 @@
-chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-	if (request.type == "requestFirebaseScript") {
-		console.log("Sending Firebase script to tab "+sender.tab.id+".");
-		$.get("https://static.firebase.com/v0/firebase.js", function(data, textStatus, jsXHR) { 
-			chrome.tabs.executeScript(sender.tab.id, {code: data} ); 
-		}, "text");
-		sendResponse({ body: "Injecting Firebase script."});
+var rootRef = new Firebase("https://fbinjection.firebaseio-demo.com/");
+
+// forward messages from the fb_msgs port to Firebase
+function onMsgReceived(msg) {
+	console.log("received msg from injected script:", msg);
+	rootRef.push(msg);
+}
+
+chrome.extension.onConnect.addListener(function(port) {
+	if (port.name == "fb_msgs") {
+
+		// listen for messages sent to the fb_msgs port
+		port.onMessage.addListener(onMsgReceived);
+		
+		// forward messages from Firebase to the fb_msgs port
+		rootRef.on("child_added", function(snap) {
+			console.log("child_added:", snap.val());
+			port.postMessage(snap.val());
+		});
+
 	}
 });
